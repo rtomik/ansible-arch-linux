@@ -13,9 +13,9 @@ user:
   country: "United States"
 
 git:
-  name: "{{ user['full_name'] }}"
+  name: "name"
   # obfuscated a little so bots won't find it
-  email_b64: "bG9nYW5AbG9nYW5tYXJjaGlvbmUuY29t"
+  email_b64: "mail encoded in b64"
   # can be "cache", "store", "osxkeychain", or "manager"
   helper: "cache"
   # can be "true" or "false"
