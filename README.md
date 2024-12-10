@@ -1,8 +1,6 @@
-# ansible-arch-linux
+# Arch Linux Ansible
 
-[![Lint](https://github.com/loganmarchione/ansible-arch-linux/actions/workflows/lint.yml/badge.svg)](https://github.com/loganmarchione/ansible-arch-linux/actions/workflows/lint.yml)
-
-Ansible playbook to setup my Arch Linux machines (i.e., meant to be run against localhost)
+Ansible playbook to setup Arch Linux
 
 ## Explanation
 
@@ -17,14 +15,13 @@ Ansible playbook to setup my Arch Linux machines (i.e., meant to be run against 
    ```
 1. Clone this repo
    ```
-   git clone https://github.com/loganmarchione/ansible-arch-linux.git
-   cd ansible-arch-linux
+   git clone https://github.com/rtomik/arch_linux_ansible.git && cd arch_linux_ansible
    ```
 1. Install the Ansible requirements
    ```
    ansible-galaxy install -r requirements.yml
    ```
-1. (Optional) Edit the variables in `group_vars`
+1. Edit the variables in `group_vars`
 1. (Optional) Run the playbook in check mode to view potential changes
    ```
    ansible-playbook main.yml --ask-become-pass --check
@@ -33,6 +30,3 @@ Ansible playbook to setup my Arch Linux machines (i.e., meant to be run against 
    ```
    ansible-playbook main.yml --ask-become-pass
    ```
-
-## TODO
-- [X] Add reflector pacman hook
