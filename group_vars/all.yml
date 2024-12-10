@@ -3,12 +3,12 @@
 # User configuration
 #
 user:
-  name: logan
-  full_name: "Logan Marchione"
+  name: name
+  full_name: "full name"
   primary_group: users
   additional_groups: docker,wheel,render
   # /bin/bash or /bin/zsh
-  shell: /bin/zsh
+  shell: /bin/bash
   # See country list by running `reflector --list-countries`
   country: "United States"
 
@@ -45,7 +45,7 @@ detect_scanner: true
 
 # whether to enable bluetooth or not
 # true or false
-enable_bluetooth: false
+enable_bluetooth: true
 
 # whether to install laptop tools
 # true or false
@@ -65,7 +65,7 @@ aur_helper: yay
 
 # if not using LVM, disable it
 # true or false
-disable_lvm: true
+disable_lvm: false
 
 # if not using systemd homed, disable it
 # true or false
@@ -162,39 +162,24 @@ packages:
   - zsh
   - zsh-completions
   - zstd
+  - steam
 
 aur_packages:
   - 7-zip-bin
   - etcher-bin
   - joplin-appimage
-  - makemkv
   - rpi-imager-bin
   - svgo
   - variety-git
-  - ventoy-bin
 
 flatpaks:
-  - com.discordapp.Discord
-  - com.github.tchx84.Flatseal
   - com.slack.Slack
   - com.spotify.Client
-  - com.valvesoftware.Steam
-  - fr.handbrake.ghb
-  - info.beyondallreason.bar
-  - org.bunkus.mkvtoolnix-gui
   - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
   - org.freedesktop.Platform.openh264/x86_64/2.3.0
-  - org.gimp.GIMP
-  - io.github.flattool.Warehouse
-  - it.mijorus.gearlever
   - org.gtk.Gtk3theme.Adwaita-dark
   - org.gtk.Gtk3theme.Yaru-dark
   - org.gtk.Gtk3theme.Yaru-light
-  - org.libreoffice.LibreOffice
-  - org.mozilla.Thunderbird
-  - org.remmina.Remmina
-  - org.tenacityaudio.Tenacity
-  - us.zoom.Zoom
   # See other themes here
   # flatpak remote-ls flathub | grep org.gtk.Gtk3theme
 
@@ -217,14 +202,9 @@ vscode_extension_list:
   - arcticicestudio.nord-visual-studio-code
   - dracula-theme.theme-dracula
   - eamodio.gitlens
-  - golang.go
-  - HashiCorp.HCL
-  - HashiCorp.terraform
   - ms-azuretools.vscode-docker
   - ms-python.python
   - redhat.ansible
-  - redhat.vscode-xml
-  - redhat.vscode-yaml
   - streetsidesoftware.code-spell-checker
   - vscode-icons-team.vscode-icons
 

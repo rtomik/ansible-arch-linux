@@ -1,7 +1,0 @@
----
-enable_list:
-  - fqcn-builtins  # opt-in
-warn_list:
-  - role-name
-  - var-naming
-  - yaml[truthy]

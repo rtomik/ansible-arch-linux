@@ -1,5 +1,5 @@
 ---
-- name: Install desktop environment
+- name: Install kde desktop environment
   when: desktop == "kde"
   block:
     - name: Install Plasma
@@ -43,7 +43,7 @@
         enabled: yes
       become: true
 
-- name: Install desktop environment
+- name: Install gnome desktop environment
   when: desktop == "gnome"
   block:
     - name: Install Gnome

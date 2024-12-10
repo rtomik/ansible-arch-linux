@@ -1,0 +1,14 @@
+---
+- name: Main play
+  hosts: all
+  roles:
+    - { role: 01_host_info, tags: ['info'] }
+    - { role: 02_basics, tags: ['basics']  }
+    - { role: 03_gpu, tags: ['gpu']}
+    - { role: 04_desktop, tags: ['dektop'] }
+    - { role: 05_packages, tags: ['packages']  }
+    - { role: 06_microcode, when: install_microcode, tags: ['microcode']  }
+    - { role: 07_users, tags: ['users'] }
+    - { role: 08_printing_scanning, when: enable_printing, tags: ['printer'] }
+    - { role: 09_bluetooth, when: enable_bluetooth, tags: ['bt'] }
+    - { role: 10_laptop, when: laptop, tags: ['laptop'] }
