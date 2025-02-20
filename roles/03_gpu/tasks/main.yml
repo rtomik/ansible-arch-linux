@@ -7,24 +7,29 @@
   become: true
 
 - name: Detect GPU
-  # ansible.builtin.shell: set -o pipefail && lspci -v | grep -A1 -e VGA -e 3D  # noqa command-instead-of-shell
-  ansible.builtin.shell: set -o pipefail && lspci | grep -i 'VGA\|3D\|display'  # noqa command-instead-of-shell
+  ansible.builtin.shell: |
+    set -o pipefail
+    lspci | grep -E "VGA|3D controller" | sed -E 's/.*: (.*)/\1/'
   register: gpu_result
   changed_when: no
+
+- name: Set GPU type fact
+  ansible.builtin.set_fact:
+    gpu_type: "{{ 'AMD' if 'AMD' in gpu_result.stdout or 'ATI' in gpu_result.stdout else ('Intel' if 'Intel' in gpu_result.stdout else ('NVIDIA' if 'NVIDIA' in gpu_result.stdout else 'Unknown')) }}"
+
+- name: Display detected GPU
+  ansible.builtin.debug:
+    msg: "Detected GPU: {{ gpu_type }} ({{ gpu_result.stdout | trim }})"
 
 - name: Install GPU drivers (AMD)
   community.general.pacman:
     name:
       - mesa
       - mesa-utils
-      # https://wiki.archlinux.org/title/Xorg
       - xf86-video-amdgpu
-      # https://wiki.archlinux.org/title/Hardware_video_acceleration
       - mesa-vdpau
       - libva-mesa-driver
-      # https://wiki.archlinux.org/title/Vulkan
       - vulkan-radeon
-      # https://wiki.archlinux.org/title/GPGPU
       - rocm-hip-runtime
       - rocm-hip-sdk
       - hip-runtime-amd
@@ -33,39 +38,32 @@
       - rocm-opencl-sdk
     state: present
   become: true
-  when: ("'radeon' in gpu_result.stdout.lower()") or ("'amd/ati' in gpu_result.stdout.lower()")
+  when: gpu_type == 'AMD'
 
 - name: Install GPU drivers (Intel)
   community.general.pacman:
     name:
       - mesa
       - mesa-utils
-      # https://wiki.archlinux.org/title/Xorg
       - xf86-video-intel
-      # https://wiki.archlinux.org/title/Hardware_video_acceleration
       - intel-media-driver
       - libva-intel-driver
-      # https://wiki.archlinux.org/title/Vulkan
       - vulkan-intel
-      # https://wiki.archlinux.org/title/GPGPU
       - intel-compute-runtime
       - opencl-clover-mesa
     state: present
   become: true
-  when: "'intel' in gpu_result.stdout.lower()"
+  when: gpu_type == 'Intel'
 
-- name: Install GPU drivers (Nvidia)
+- name: Install GPU drivers (NVIDIA)
   community.general.pacman:
     name:
       - mesa
       - mesa-utils
-      # https://wiki.archlinux.org/title/Xorg
-      - nvidia
-      # https://wiki.archlinux.org/title/Hardware_video_acceleration
+      - nvidia-dkms
       - nvidia-utils
-      # https://wiki.archlinux.org/title/GPGPU
       - cuda
       - opencl-nvidia
     state: present
   become: true
-  when: "'nvidia' in gpu_result.stdout.lower()"
+  when: gpu_type == 'NVIDIA'

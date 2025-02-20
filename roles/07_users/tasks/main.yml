@@ -5,7 +5,7 @@
     comment: "{{ user.full_name }}"
     groups: "{{ user.additional_groups }}"
     append: yes
-    shell: "{{ user.shell }}"
+    shell: "/usr/bin/zsh"
     state: present
   become: true
 
@@ -19,85 +19,34 @@
   community.general.git_config:
     name: user.email
     scope: global
-    value: "{{ git.email_b64 | b64decode }}"
+    value: "{{ git.email }}"
 
-- name: Git config credential.helper
-  community.general.git_config:
-    name: credential.helper
-    scope: global
-    value: "{{ git.helper }}"
-
-- name: Git config pull.rebase
-  community.general.git_config:
-    name: pull.rebase
-    scope: global
-    value: "{{ git.rebase }}"
-
-- name: Git config diff.colorMoved
-  community.general.git_config:
-    name: diff.colorMoved
-    scope: global
-    value: "{{ git.colorMoved }}"
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    shell: /usr/bin/zsh
+  become: true
 
 - name: Install Oh My Zsh
-  ansible.builtin.git:
-    repo: 'https://github.com/ohmyzsh/ohmyzsh.git'
-    dest: "/home/{{ user.name }}/.oh-my-zsh"
-    clone: yes
-    update: yes
-    version: master
-    depth: 1
+  ansible.builtin.shell:
+    cmd: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    creates: "/home/{{ user.name }}/.oh-my-zsh"
+  become: true
+  become_user: "{{ user.name }}"
 
-- name: Set permissions for ~/.oh-my-zsh
-  ansible.builtin.file:
-    path: "/home/{{ user.name }}/.oh-my-zsh"
-    owner: "{{ user.name }}"
-    group: "{{ user.primary_group }}"
-    mode: 0750
-
-- name: Install Powerlevel10k theme
-  ansible.builtin.git:
-    repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: "/home/{{ user.name }}/.oh-my-zsh/custom/themes/powerlevel10k"
-    clone: yes
-    update: yes
-    version: master
-    depth: 1
-
-- name: Set permissions for Powerlevel10k
-  ansible.builtin.file:
-    path: '/home/{{ user.name }}/.oh-my-zsh/custom/themes/powerlevel10k'
-    owner: "{{ user.name }}"
-    group: "{{ user.primary_group }}"
-    mode: 0750
+- name: Create .zshrc
+  become: true
+  become_user: '{{ user.name }}'
+  ansible.builtin.template:
+    src: zshrc.j2
+    dest: '~{{ user.name}}/.zshrc'
+    backup: true
+    mode: 'u=rw,go=r'
 
 - name: Install VS Code extensions
-  ansible.builtin.shell: code --install-extension {{ item }}  # noqa command-instead-of-shell
+  ansible.builtin.shell: code --install-extension {{ item }}
   with_items: "{{ vscode_extension_list }}"
   changed_when: no
-
-- name: Get dotfiles
-  ansible.builtin.get_url:
-    url: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    mode: 0644
-    owner: "{{ user.name }}"
-    group: "{{ user.primary_group }}"
-  with_items:
-    - { src: 'https://raw.githubusercontent.com/loganmarchione/dotfiles/main/.aliases', dest: '/home/logan/.aliases' }
-    - { src: 'https://raw.githubusercontent.com/loganmarchione/dotfiles/main/.vimrc', dest: '/home/logan/.vimrc' }
-    - { src: 'https://raw.githubusercontent.com/loganmarchione/dotfiles/main/.bashrc', dest: '/home/logan/.bashrc' }
-    - { src: 'https://raw.githubusercontent.com/loganmarchione/dotfiles/main/.zshrc', dest: '/home/logan/.zshrc' }
-    - { src: 'https://raw.githubusercontent.com/loganmarchione/dotfiles/main/.p10k.zsh', dest: '/home/logan/.p10k.zsh' }
-
-- name: Update makepkg configuration file
-  ansible.builtin.template:
-    src: makepkg.conf
-    dest: "/home/{{ user.name }}/.makepkg.conf"
-    backup: no
-    owner: "{{ user.name }}"
-    group: "{{ user.primary_group }}"
-    mode: 0644
 
 - name: Mask systemd services - lvm
   ansible.builtin.systemd:

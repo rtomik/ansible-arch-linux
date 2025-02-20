@@ -9,13 +9,15 @@ Ansible playbook to setup Arch Linux
 
 ## Requirements
 
-1. Install the necessary packages
+1. Install the necessary packages and start ssh
    ```
    sudo pacman -S ansible git python
+   sudo systemctl start sshd
    ```
 1. Clone this repo
    ```
-   git clone https://github.com/rtomik/arch_linux_ansible.git && cd arch_linux_ansible && mv group_vars/all.yml_ex group_vars/all.yml
+   git clone https://github.com/rtomik/arch_linux_ansible.git && cd arch_linux_ansible \
+   && mv group_vars/all.yml_ex group_vars/all.yml
    ```
 1. Install the Ansible requirements
    ```

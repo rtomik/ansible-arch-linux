@@ -7,29 +7,55 @@ user:
   full_name: "full name"
   primary_group: users
   additional_groups: docker,wheel,render
-  # /bin/bash or /bin/zsh
-  shell: /bin/bash
   # See country list by running `reflector --list-countries`
   country: "United States"
 
 git:
   name: "name"
-  # obfuscated a little so bots won't find it
-  email_b64: "mail encoded in b64"
+  email: "your@email.com"
   # can be "cache", "store", "osxkeychain", or "manager"
   helper: "cache"
   # can be "true" or "false"
   rebase: "true"
-  # see this https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---color-movedltmodegt
-  colorMoved: "zebra"
 
-#
+##
 # Miscellaneous
 #
 
 # desktop environment to install
 # "kde" or "gnome"
 desktop: kde
+
+# zsh config
+# Default theme
+oh_my_zsh_theme: intheloop
+
+# Default plugins
+oh_my_zsh_plugins:
+  - git
+  - kubectl
+  - docker
+  - ansible
+
+# Whether to install by default for all specified users.
+# May be overridden by `oh_my_zsh_install` under each user.
+oh_my_zsh_install: true
+
+# Default update mode for Oh-My-Zsh
+# accepted values are:
+# disabled (default)
+# auto
+# reminder
+oh_my_zsh_update_mode: disabled
+
+# Default update frequency in days. When the update mode is set to a value other
+# than "disabled", this is the frequency (in days) to check for a new version.
+# The value 0 will check every time a new shell session starts.
+oh_my_zsh_update_frequency: 13
+
+# Whether to write the ~/.zshrc file
+# May be overridden by `oh_my_zsh: write_zshrc:` under each user.
+oh_my_zsh_write_zshrc: true
 
 # only AMD or Intel CPUs are currently supported
 # true or false
@@ -65,7 +91,7 @@ aur_helper: yay
 
 # if not using LVM, disable it
 # true or false
-disable_lvm: false
+disable_lvm: true
 
 # if not using systemd homed, disable it
 # true or false
@@ -82,7 +108,6 @@ packages:
   - bash-completion
   - cadaver
   - chromium
-  - code
   - curl
   - docker
   - docker-compose
@@ -125,12 +150,9 @@ packages:
   - ncdu
   - neofetch
   - networkmanager
-  - nextcloud-client
-  - nextcloud-client-cloudproviders
   - ntfs-3g
   - openresolv
   - openssh
-  - openvpn
   - picocom
   - pipewire
   - pipewire-alsa
@@ -138,9 +160,7 @@ packages:
   - qbittorrent
   - rsync
   - screen
-  - solaar
   - sudo
-  - texmaker
   - texlive-latexextra
   - thunar
   - tree
@@ -157,24 +177,20 @@ packages:
   # Needed for GTK apps that run as Flatpaks
   - xdg-desktop-portal-gtk
   - xfsprogs
-  - youtube-dl
   - zip
   - zsh
   - zsh-completions
   - zstd
   - steam
+  - argocd
 
 aur_packages:
   - 7-zip-bin
   - etcher-bin
   - joplin-appimage
   - rpi-imager-bin
-  - svgo
-  - variety-git
 
 flatpaks:
-  - com.slack.Slack
-  - com.spotify.Client
   - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
   - org.freedesktop.Platform.openh264/x86_64/2.3.0
   - org.gtk.Gtk3theme.Adwaita-dark
@@ -199,14 +215,11 @@ base_fonts:
   - ttf-hack
 
 vscode_extension_list:
-  - arcticicestudio.nord-visual-studio-code
-  - dracula-theme.theme-dracula
   - eamodio.gitlens
   - ms-azuretools.vscode-docker
   - ms-python.python
   - redhat.ansible
   - streetsidesoftware.code-spell-checker
-  - vscode-icons-team.vscode-icons
 
 printing_scanning_packages:
   - cups
