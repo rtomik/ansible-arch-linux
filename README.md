@@ -16,7 +16,7 @@ Ansible playbook to setup Arch Linux
    ```
 1. Clone this repo
    ```
-   git clone https://github.com/rtomik/arch_linux_ansible.git && cd arch_linux_ansible \
+   git clone https://github.com/rtomik/ansible-arch-linux.git && cd ansible-arch-linux \
    && mv group_vars/all.yml_ex group_vars/all.yml
    ```
 1. Install the Ansible requirements
