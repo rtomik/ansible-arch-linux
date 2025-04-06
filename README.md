@@ -7,7 +7,7 @@ Ansible playbook to setup Arch Linux
 * This is meant for _my machine_. You can use it as a guide, but please don't blindly run it on your machine (it will break things).
 * This is meant to be run in the [Post-installation](https://wiki.archlinux.org/title/installation_guide#Post-installation) section of the [Installation guide](https://wiki.archlinux.org/title/installation_guide) (i.e., after your partitions are setup, user account is created, fstab is setup, chroot, etc...)
 
-## Requirements
+## Quick Start
 
 1. Install the necessary packages
    ```
