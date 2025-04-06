@@ -9,10 +9,9 @@ Ansible playbook to setup Arch Linux
 
 ## Requirements
 
-1. Install the necessary packages and start ssh
+1. Install the necessary packages
    ```
-   sudo pacman -S ansible git python
-   sudo systemctl start sshd
+   sudo pacman -S ansible git python vim
    ```
 1. Clone this repo
    ```
@@ -24,11 +23,14 @@ Ansible playbook to setup Arch Linux
    ansible-galaxy install -r requirements.yml
    ```
 1. Edit the variables in `group_vars`
+   ```
+   vim group_vars/all.yml
+   ```
 1. (Optional) Run the playbook in check mode to view potential changes
    ```
    ansible-playbook main.yml --ask-become-pass --check
    ````
 1. Run the playbook (enter your user's password when prompted)
    ```
-   ansible-playbook main.yml --ask-become-pass
+   ansible-playbook playbooks/main.yml --ask-become-pass
    ```
