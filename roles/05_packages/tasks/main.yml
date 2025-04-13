@@ -1,4 +1,30 @@
 ---
+
+- name: Enable multilib repository
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    regexp: '^#\[multilib\]'
+    line: '[multilib]'
+    state: present
+  register: multilib_enabled
+  become: true
+
+- name: Enable multilib Include line
+  ansible.builtin.lineinfile:
+    path: /etc/pacman.conf
+    regexp: '^#Include = /etc/pacman.d/mirrorlist'
+    insertafter: '^\[multilib\]'
+    line: 'Include = /etc/pacman.d/mirrorlist'
+    state: present
+  when: multilib_enabled is changed
+  become: true
+
+- name: Update package databases
+  community.general.pacman:
+    update_cache: yes
+  when: multilib_enabled is changed
+  become: true
+
 - name: Install packages
   community.general.pacman:
     name: "{{ packages }}"

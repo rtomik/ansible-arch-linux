@@ -1,5 +1,6 @@
 ---
 - name: Install Yay AUR helper and AUR packages
+  become: true
   block:
     # Set up non-root user for AUR operations
     - name: Create build user for AUR

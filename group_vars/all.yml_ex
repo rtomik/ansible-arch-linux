@@ -159,6 +159,8 @@ disable_systemd_homed: true
 pacman:
   parallel_downloads: 10
 
+aur_helper: yay
+
 packages:
   - alsa-firmware
   - alsa-plugins
@@ -242,6 +244,7 @@ packages:
   - zstd
   - argocd
   - ansible-lint
+  - steam
 
 aur_packages:
   - 7-zip-bin

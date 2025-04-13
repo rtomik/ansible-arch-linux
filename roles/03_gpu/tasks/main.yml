@@ -55,15 +55,33 @@
   become: true
   when: gpu_type == 'Intel'
 
-- name: Install GPU drivers (NVIDIA)
+- name: Install NVIDIA drivers for gaming
   community.general.pacman:
     name:
-      - mesa
-      - mesa-utils
-      - nvidia-dkms
+      - nvidia
       - nvidia-utils
-      - cuda
+      - nvidia-settings
+      - lib32-nvidia-utils
+      - vulkan-icd-loader
+      - lib32-vulkan-icd-loader
+      - libvdpau
+      - lib32-libvdpau
       - opencl-nvidia
     state: present
   become: true
   when: gpu_type == 'NVIDIA'
+
+- name: Enable NVIDIA modules in initramfs
+  ansible.builtin.lineinfile:
+    path: /etc/mkinitcpio.conf
+    regexp: '^MODULES='
+    line: 'MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)'
+    state: present
+  become: true
+  register: mkinitcpio_conf
+  when: gpu_type == 'NVIDIA'
+
+- name: Regenerate initramfs if NVIDIA modules were added
+  ansible.builtin.command: mkinitcpio -P
+  become: true
+  when: gpu_type == 'NVIDIA' and mkinitcpio_conf.changed
