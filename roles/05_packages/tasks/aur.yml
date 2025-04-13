@@ -1,10 +1,51 @@
 ---
-- name: Installing AUR helper
-  kewlfft.aur.aur:
-    name: "{{ aur_helper }}"
+- name: Install Yay AUR helper and AUR packages
+  block:
+    # Set up non-root user for AUR operations
+    - name: Create build user for AUR
+      user:
+        name: aur_builder
+        group: wheel
 
-- name: Install AUR packages
-  kewlfft.aur.aur:
-    name: "{{ aur_packages }}"
-    state: present
-    use: "{{ aur_helper }}"
+    - name: Allow aur_builder to use sudo without password
+      lineinfile:
+        path: /etc/sudoers.d/99_aur_builder
+        state: present
+        line: "aur_builder ALL=(ALL) NOPASSWD: ALL"
+        create: yes
+        validate: 'visudo -cf %s'
+
+    # Install yay using makepkg directly (first run)
+    - name: Clone yay repo
+      git:
+        repo: https://aur.archlinux.org/yay.git
+        dest: /tmp/yay
+      become: "{{ ansible_connection != 'local' }}"
+      become_user: "{{ 'aur_builder' if ansible_connection != 'local' else ansible_user_id }}"
+
+    - name: Build and install yay
+      command: makepkg -si --noconfirm
+      args:
+        chdir: /tmp/yay
+      become: "{{ ansible_connection != 'local' }}"
+      become_user: "{{ 'aur_builder' if ansible_connection != 'local' else ansible_user_id }}"
+      changed_when: true
+
+    # Install regular AUR packages
+    - name: Install AUR packages
+      kewlfft.aur.aur:
+        name: "{{ aur_packages }}"
+        state: present
+        use: "{{ aur_helper }}"
+      become: true
+      become_user: "{{ 'aur_builder' if ansible_connection != 'local' else ansible_user_id }}"
+
+    # Install printing/scanning AUR packages if enabled
+    - name: Install printing/scanning AUR packages
+      kewlfft.aur.aur:
+        name: "{{ printing_scanning_aur_packages }}"
+        state: present
+        use: "{{ aur_helper }}"
+      become: true
+      become_user: "{{ 'aur_builder' if ansible_connection != 'local' else ansible_user_id }}"
+      when: enable_printing | bool

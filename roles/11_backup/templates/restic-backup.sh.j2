@@ -1,0 +1,62 @@
+#!/bin/bash
+# Restic backup script with comprehensive retention policy
+
+# Exit on errors
+set -e
+
+# Set up environment
+export RESTIC_REPOSITORY="{{ restic_repository }}"
+export RESTIC_PASSWORD_FILE="{{ restic_password_file }}"
+{% if restic_environment is defined and restic_environment is not none %}
+{% for key, value in restic_environment.items() %}
+export {{ key }}="{{ value }}"
+{% endfor %}
+{% endif %}
+
+echo "===== Starting backup at $(date) ====="
+
+# Run the backup
+restic backup \
+{% for path in restic_backup_paths | default(['/etc', '/home']) %}
+  "{{ path }}" {% if not loop.last %}\{% endif %}
+{% endfor %}
+{% if restic_exclude_paths | default([]) | length > 0 %}
+{% for exclude in restic_exclude_paths %}
+  --exclude="{{ exclude }}" {% if not loop.last %}\{% endif %}
+{% endfor %}
+{% endif %}
+  --tag "{{ restic_tag_automated | default('automated-backup') }}" \
+  --tag "{{ restic_tag_hostname | default(ansible_hostname) }}" \
+{% if restic_backup_options | default([]) | length > 0 %}
+{% for option in restic_backup_options %}
+  {{ option }} {% if not loop.last %}\{% endif %}
+{% endfor %}
+{% endif %}
+  --one-file-system
+
+echo "Backup completed at $(date)"
+
+# Apply comprehensive retention policy
+echo "Applying retention policy"
+restic forget \
+  --keep-last {{ restic_keep_last | default(5) }} \
+  --keep-daily {{ restic_keep_daily | default(7) }} \
+  --keep-weekly {{ restic_keep_weekly | default(4) }} \
+  --keep-monthly {{ restic_keep_monthly | default(6) }} \
+  --keep-yearly {{ restic_keep_yearly | default(3) }} \
+{% if restic_forget_options | default([]) | length > 0 %}
+{% for option in restic_forget_options %}
+  {{ option }} {% if not loop.last %}\{% endif %}
+{% endfor %}
+{% endif %}
+  --prune
+
+echo "Backup and retention completed at $(date)"
+
+# Verify repository is still valid
+{% if restic_check_after_backup | default(true) %}
+echo "Verifying repository integrity"
+restic check
+{% endif %}
+
+echo "===== Backup process finished at $(date) ====="

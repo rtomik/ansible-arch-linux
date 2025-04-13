@@ -1,10 +1,10 @@
 ---
-#
-# User configuration
-#
+# ----------------------#
+#   User configuration
+# ----------------------#
 user:
-  name: name
-  full_name: "full name"
+  name: "name"
+  full_name: "Full name"
   primary_group: users
   additional_groups: docker,wheel,render
   # See country list by running `reflector --list-countries`
@@ -12,21 +12,37 @@ user:
 
 git:
   name: "name"
-  email: "your@email.com"
+  email: "email"
   # can be "cache", "store", "osxkeychain", or "manager"
   helper: "cache"
   # can be "true" or "false"
   rebase: "true"
 
-##
-# Miscellaneous
-#
+# ----------------------#
 
 # desktop environment to install
 # "kde" or "gnome"
 desktop: kde
 
-# zsh config
+# only AMD or Intel CPUs are currently supported
+install_microcode: true
+
+# whether to enable printing/scanning or not
+enable_printing: true
+
+# whether to detect the scanner or not
+detect_scanner: true
+
+# whether to enable bluetooth or not
+enable_bluetooth: true
+
+# whether to install laptop tools
+laptop: false
+
+# ----------------------#
+#   Terminal - ZSH
+# ----------------------#
+
 # Default theme
 oh_my_zsh_theme: intheloop
 
@@ -42,10 +58,7 @@ oh_my_zsh_plugins:
 oh_my_zsh_install: true
 
 # Default update mode for Oh-My-Zsh
-# accepted values are:
-# disabled (default)
-# auto
-# reminder
+# accepted values are: disabled (default), auto, reminder
 oh_my_zsh_update_mode: disabled
 
 # Default update frequency in days. When the update mode is set to a value other
@@ -57,37 +70,78 @@ oh_my_zsh_update_frequency: 13
 # May be overridden by `oh_my_zsh: write_zshrc:` under each user.
 oh_my_zsh_write_zshrc: true
 
-# only AMD or Intel CPUs are currently supported
+# ----------------------#
+#   Backup - Restic
+# ----------------------#
+
+# External Storage Configuration
+external_storage: true
+external_storage_mount_point: "/mnt/hetzner"
+external_storage_address: "//cifspath" # u4-sub1.your-storagebox.de/u4-sub1
+external_storage_fstype: "cifs"
+external_storage_username: "username"
+external_storage_password: "password"  # Better to store in vault
+storage_credentials_path: "/root/.smbcredentials"
+external_storage_options: "credentials=/root/.smbcredentials,iocharset=utf8,vers=3.0,_netdev,x-systemd.automount,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s"
+
+# whether to enable restic backup
 # true or false
-install_microcode: true
+enable_backup: true
 
-# whether to enable printing/scanning or not
-# true or false
-enable_printing: true
+# Restic Configuration
+restic_repository: "/mnt/"  # Or s3:bucket:/path etc.
+restic_password: "secure-password"
+restic_password_file: "/root/.restic-password"
+restic_script_path: "/usr/local/bin/restic-backup.sh"
+restic_log_dir: "/var/log/restic"
+restic_initialize_repo: true
+restic_tag_automated: "automated-backup"
+restic_tag_hostname: "{{ ansible_hostname }}"
+restic_environment:
+  # Add environment variables needed for your repository
+  # AWS_ACCESS_KEY_ID: "your-access-key"
+  # AWS_SECRET_ACCESS_KEY: "your-secret-key"
 
-# whether to detect the scanner or not
-# true or false
-detect_scanner: true
+# Paths to backup
+restic_backup_paths:
+  - /home
+  - /etc
+  - /var/lib/pacman
+  - /usr/local
+  - /var/log
 
-# whether to enable bluetooth or not
-# true or false
-enable_bluetooth: true
+# Paths to exclude (optional)
+restic_exclude_paths:
+  - "**/.cache"
+  - "**/node_modules"
+  - "**/.Trash"
 
-# whether to install laptop tools
-# true or false
-laptop: false
+# Additional backup options (optional)
+restic_backup_options:
+  - "--verbose"
+  # - "--limit-upload 1024"
 
-# how many parallel downloads to run at once
-pacman:
-  parallel_downloads: 10
+# Retention policy
+restic_keep_last: 5
+restic_keep_daily: 7
+restic_keep_weekly: 4
+restic_keep_monthly: 6
+restic_keep_yearly: 3
 
-# set aur helper
-# supported helpers are here https://github.com/kewlfft/ansible-aur#kewlfftauraur-module
-aur_helper: yay
+# Additional forget options (optional)
+restic_forget_options:
+  - "--group-by host"
 
-#
-# Services
-#
+# Schedule (cron settings)
+restic_backup_hour: "2"
+restic_backup_minute: "30"
+
+# Check after backup (optional)
+restic_check_after_backup: true
+
+# ----------------------#
+#       Services
+# ----------------------#
 
 # if not using LVM, disable it
 # true or false
@@ -97,15 +151,21 @@ disable_lvm: true
 # true or false
 disable_systemd_homed: true
 
-#
-# Packages
-#
+# ----------------------#
+#       Packages
+# ----------------------#
+
+# how many parallel downloads to run at once
+pacman:
+  parallel_downloads: 10
+
 packages:
   - alsa-firmware
   - alsa-plugins
   - alsa-utils
   - bash
   - bash-completion
+  - base-devel
   - cadaver
   - chromium
   - curl
@@ -174,7 +234,6 @@ packages:
   - wireguard-tools
   - wireplumber
   - wpa_supplicant
-  # Needed for GTK apps that run as Flatpaks
   - xdg-desktop-portal-gtk
   - xfsprogs
   - zip
@@ -182,12 +241,14 @@ packages:
   - zsh-completions
   - zstd
   - argocd
+  - ansible-lint
 
 aur_packages:
   - 7-zip-bin
   - etcher-bin
   - joplin-appimage
   - rpi-imager-bin
+  - visual-studio-code-bin
 
 flatpaks:
   - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08

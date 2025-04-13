@@ -12,3 +12,4 @@
     - { role: 08_printing_scanning, when: enable_printing, tags: ['printer'] }
     - { role: 09_bluetooth, when: enable_bluetooth, tags: ['bt'] }
     - { role: 10_laptop, when: laptop, tags: ['laptop'] }
+    - { role: 11_backup, when: enable_backup, tags: ['backup'] }

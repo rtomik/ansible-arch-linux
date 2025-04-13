@@ -1,0 +1,75 @@
+---
+- name: Configure external storage
+  when: external_storage | bool
+  become: true
+  block:
+    - name: Ensure mount directory exists
+      file:
+        path: "{{ external_storage_mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Install required CIFS utilities
+      community.general.pacman:
+        name: cifs-utils
+        state: present
+
+    - name: Create credentials file
+      template:
+        src: smbcredentials.j2
+        dest: "{{ storage_credentials_path }}"
+        mode: '0600'
+
+    - name: Mount storage box using CIFS
+      mount:
+        path: "{{ external_storage_mount_point }}"
+        src: "{{ external_storage_address }}"
+        fstype: "{{ external_storage_fstype }}"
+        opts: "{{ external_storage_options }}"
+        state: mounted
+
+    - name: Add to fstab for persistence
+      mount:
+        path: "{{ external_storage_mount_point }}"
+        src: "{{ external_storage_address }}"
+        fstype: "{{ external_storage_fstype }}"
+        opts: "{{ external_storage_options }}"
+        state: present
+
+- name: Setup Restic backup
+  when: enable_backup | bool
+  become: true
+  block:
+    - name: Create backup log directory
+      ansible.builtin.file:
+        path: "{{ restic_log_dir | default('/var/log/restic') }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create Restic password file
+      ansible.builtin.copy:
+        content: "{{ restic_password }}"  # Removed trailing space
+        dest: "{{ restic_password_file }}"
+        mode: '0600'
+
+    - name: Initialize Restic repository if needed
+      ansible.builtin.command: >
+        restic -r {{ restic_repository }} init --password-file {{ restic_password_file }}
+      register: init_result
+      failed_when: init_result.rc != 0 and "config file already exists" not in init_result.stderr
+      changed_when: init_result.rc == 0 and "successfully" in init_result.stdout
+      environment: "{{ restic_environment | default({}) | from_yaml }}"
+      when: restic_initialize_repo | default(true) | bool
+
+    - name: Create Restic backup script with retention
+      ansible.builtin.template:
+        src: restic-backup.sh.j2
+        dest: "{{ restic_script_path }}"
+        mode: '0700'
+
+    - name: Schedule regular backups
+      cron:
+        name: "Restic backup with retention"
+        hour: "{{ restic_backup_hour | default('2') }}"
+        minute: "{{ restic_backup_minute | default('30') }}"
+        job: "{{ restic_script_path }} >> {{ restic_log_dir | default('/var/log/restic') }}/backup.log 2>&1"
