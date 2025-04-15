@@ -95,6 +95,7 @@ restic_password_file: "/root/.restic-password"
 restic_script_path: "/usr/local/bin/restic-backup.sh"
 restic_log_dir: "/var/log/restic"
 restic_initialize_repo: true
+restic_check_after_backup: true
 restic_tag_automated: "automated-backup"
 restic_tag_hostname: "{{ ansible_hostname }}"
 restic_environment:
@@ -103,16 +104,17 @@ restic_environment:
   # AWS_SECRET_ACCESS_KEY: "your-secret-key"
 
 # Paths to backup
-restic_backup_paths:
+rrestic_backup_paths:
   - /home
   - /etc
   - /var/lib/pacman
   - /usr/local
-  - /var/log
+  - /boot
 
 # Paths to exclude (optional)
 restic_exclude_paths:
   - "**/.cache"
+  - "**/Cache"
   - "**/node_modules"
   - "**/.Trash"
 
@@ -135,9 +137,6 @@ restic_forget_options:
 # Schedule (cron settings)
 restic_backup_hour: "2"
 restic_backup_minute: "30"
-
-# Check after backup (optional)
-restic_check_after_backup: true
 
 # ----------------------#
 #       Services
@@ -205,7 +204,6 @@ packages:
   - lame
   - libimobiledevice
   - linux-firmware
-  - man
   - man-db
   - man-pages
   - minicom
@@ -264,8 +262,6 @@ flatpaks:
 
 base_fonts:
   - adobe-source-code-pro-fonts
-  - adobe-source-sans-pro-fonts
-  - adobe-source-serif-pro-fonts
   - gnu-free-fonts
   - noto-fonts
   - noto-fonts-cjk

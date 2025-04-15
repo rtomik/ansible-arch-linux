@@ -1,10 +1,32 @@
 #!/bin/bash
-# Restic backup script with comprehensive retention policy
+# Restic backup script with comprehensive retention policy and detailed logging
 
 # Exit on errors
 set -e
 
+# Define log file
+LOG_FILE="{{ restic_log_dir | default('/var/log/restic') }}/backup-$(date +%Y%m%d-%H%M%S).log"
+
+# Logging function
+log() {
+  local log_level="$1"
+  local message="$2"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  echo "[$timestamp] [$log_level] $message" | tee -a "$LOG_FILE"
+}
+
+# Error handler function
+handle_error() {
+  local exit_code=$?
+  log "ERROR" "Script failed with exit code $exit_code at line $1"
+  exit $exit_code
+}
+
+# Set trap for errors
+trap 'handle_error $LINENO' ERR
+
 # Set up environment
+log "INFO" "Setting up environment variables"
 export RESTIC_REPOSITORY="{{ restic_repository }}"
 export RESTIC_PASSWORD_FILE="{{ restic_password_file }}"
 {% if restic_environment is defined and restic_environment is not none %}
@@ -13,9 +35,12 @@ export {{ key }}="{{ value }}"
 {% endfor %}
 {% endif %}
 
-echo "===== Starting backup at $(date) ====="
+log "INFO" "===== Starting backup at $(date) ====="
 
 # Run the backup
+log "INFO" "Starting backup operation"
+backup_start_time=$(date +%s)
+
 restic backup \
 {% for path in restic_backup_paths | default(['/etc', '/home']) %}
   "{{ path }}" {% if not loop.last %}\{% endif %}
@@ -32,12 +57,22 @@ restic backup \
   {{ option }} {% if not loop.last %}\{% endif %}
 {% endfor %}
 {% endif %}
-  --one-file-system
+  --one-file-system 2>&1 | tee -a "$LOG_FILE"
 
-echo "Backup completed at $(date)"
+backup_exit_code=${PIPESTATUS[0]}
+if [ $backup_exit_code -ne 0 ]; then
+  log "ERROR" "Backup operation failed with exit code $backup_exit_code"
+  exit $backup_exit_code
+fi
+
+backup_end_time=$(date +%s)
+backup_duration=$((backup_end_time - backup_start_time))
+log "INFO" "Backup completed at $(date), took $backup_duration seconds"
 
 # Apply comprehensive retention policy
-echo "Applying retention policy"
+log "INFO" "Applying retention policy"
+forget_start_time=$(date +%s)
+
 restic forget \
   --keep-last {{ restic_keep_last | default(5) }} \
   --keep-daily {{ restic_keep_daily | default(7) }} \
@@ -49,14 +84,44 @@ restic forget \
   {{ option }} {% if not loop.last %}\{% endif %}
 {% endfor %}
 {% endif %}
-  --prune
+  --prune 2>&1 | tee -a "$LOG_FILE"
 
-echo "Backup and retention completed at $(date)"
+forget_exit_code=${PIPESTATUS[0]}
+if [ $forget_exit_code -ne 0 ]; then
+  log "ERROR" "Retention policy application failed with exit code $forget_exit_code"
+  exit $forget_exit_code
+fi
+
+forget_end_time=$(date +%s)
+forget_duration=$((forget_end_time - forget_start_time))
+log "INFO" "Retention policy applied, took $forget_duration seconds"
 
 # Verify repository is still valid
 {% if restic_check_after_backup | default(true) %}
-echo "Verifying repository integrity"
-restic check
+log "INFO" "Verifying repository integrity"
+check_start_time=$(date +%s)
+
+restic check 2>&1 | tee -a "$LOG_FILE"
+
+check_exit_code=${PIPESTATUS[0]}
+if [ $check_exit_code -ne 0 ]; then
+  log "ERROR" "Repository check failed with exit code $check_exit_code"
+  exit $check_exit_code
+fi
+
+check_end_time=$(date +%s)
+check_duration=$((check_end_time - check_start_time))
+log "INFO" "Repository integrity verified, took $check_duration seconds"
 {% endif %}
 
-echo "===== Backup process finished at $(date) ====="
+# Log total stats
+total_duration=$(($(date +%s) - backup_start_time))
+log "INFO" "===== Backup process finished at $(date), total duration: $total_duration seconds ====="
+
+# Calculate and log size statistics
+log "INFO" "Getting repository statistics"
+restic stats 2>&1 | tee -a "$LOG_FILE"
+
+# Show snapshot list for reference
+log "INFO" "Latest snapshots:"
+restic snapshots --latest 5 2>&1 | tee -a "$LOG_FILE"
