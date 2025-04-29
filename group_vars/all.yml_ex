@@ -19,6 +19,8 @@ git:
   rebase: "true"
 
 # ----------------------#
+#     Environment
+# ----------------------#
 
 # desktop environment to install
 # "kde" or "gnome"
@@ -75,7 +77,7 @@ oh_my_zsh_write_zshrc: true
 # ----------------------#
 
 # External Storage Configuration
-external_storage: true
+external_storage: false
 external_storage_mount_point: "/mnt/hetzner"
 external_storage_address: "//cifspath" # u4-sub1.your-storagebox.de/u4-sub1
 external_storage_fstype: "cifs"
@@ -86,7 +88,7 @@ external_storage_options: "credentials=/root/.smbcredentials,iocharset=utf8,vers
 
 # whether to enable restic backup
 # true or false
-enable_backup: true
+enable_backup: false
 
 # Restic Configuration
 restic_repository: "/mnt/"  # Or s3:bucket:/path etc.
