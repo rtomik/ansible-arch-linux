@@ -1,4 +1,4 @@
-# Arch Linux Ansible
+# Ansible Arch Linux
 
 Ansible playbook to setup Arch Linux
 
